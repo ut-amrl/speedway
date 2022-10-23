@@ -1,5 +1,8 @@
 #include "track/track_model.h"
 
+#include <eigen3/Eigen/Dense>
+#include <vector>
+
 namespace track {
 TrackModel::TrackModel() {}
 
@@ -8,6 +11,25 @@ void TrackModel::UpdatePointcloud(const std::vector<Eigen::Vector2f>& cloud) {
 
   SegmentPointcloud();
   FitWallPolynomials();
+}
+
+std::vector<Eigen::Vector2f> TrackModel::SampleLeftWall(double interval) const {
+  std::vector<Eigen::Vector2f> points;
+
+  // evaluate the left wall polynomials over a range of t values with the given
+  // interval for x and y and return the resultant points
+
+  return points;
+}
+
+std::vector<Eigen::Vector2f> TrackModel::SampleRightWall(
+    double interval) const {
+  std::vector<Eigen::Vector2f> points;
+
+  // evaluate the right wall polynomials over a range of t values with the given
+  // interval for x and y and return the resultant points
+
+  return points;
 }
 
 void TrackModel::SegmentPointcloud() {

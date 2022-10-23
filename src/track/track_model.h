@@ -9,6 +9,9 @@ class TrackModel {
   TrackModel();
   void UpdatePointcloud(const std::vector<Eigen::Vector2f>& cloud);
 
+  std::vector<Eigen::Vector2f> SampleLeftWall(double interval = 0.1) const;
+  std::vector<Eigen::Vector2f> SampleRightWall(double interval = 0.1) const;
+
  protected:
   void SegmentPointcloud();
   void FitWallPolynomials();

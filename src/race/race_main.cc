@@ -11,6 +11,9 @@
 #include <vector>
 
 #include "track/track_model.h"
+#include "visualization/visualization.h"
+
+using Eigen::Vector2f;
 
 namespace {
 DEFINE_string(config, "config/race.lua", "path to config file");
@@ -18,10 +21,14 @@ DEFINE_string(config, "config/race.lua", "path to config file");
 CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
 CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
 
-std::unique_ptr<track::TrackModel> track_model_;
-}  // namespace
+CONFIG_UINT(wall_color, "RaceParameters.wall_color");
 
-using Eigen::Vector2f;
+std::unique_ptr<track::TrackModel> track_model_;
+
+ros::Publisher viz_pub_;
+amrl_msgs::VisualizationMsg local_viz_msg_;
+amrl_msgs::VisualizationMsg global_viz_msg_;
+}  // namespace
 
 void OdomCallback(const nav_msgs::Odometry& msg) {
   if (FLAGS_v) {
@@ -51,6 +58,21 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
   track_model_->UpdatePointcloud(cloud);
 }
 
+void DrawWallCurves() {
+  std::vector<Vector2f> left_wall = track_model_->SampleLeftWall();
+  std::vector<Vector2f> right_wall = track_model_->SampleRightWall();
+
+  for (size_t i = 1; i < left_wall.size(); i++) {
+    visualization::DrawLine(left_wall[i - 1], left_wall[i], CONFIG_wall_color,
+                            local_viz_msg_);
+  }
+
+  for (size_t i = 1; i < right_wall.size(); i++) {
+    visualization::DrawLine(right_wall[i - 1], right_wall[i], CONFIG_wall_color,
+                            local_viz_msg_);
+  }
+}
+
 int main(int argc, char** argv) {
   google::ParseCommandLineFlags(&argc, &argv, false);
   google::InitGoogleLogging(argv[0]);
@@ -67,11 +89,30 @@ int main(int argc, char** argv) {
   ros::Subscriber laser_sub =
       node_handle.subscribe(CONFIG_laser_topic, 1, &LaserCallback);
 
+  viz_pub_ =
+      node_handle.advertise<amrl_msgs::VisualizationMsg>("visualization", 1);
+
   track_model_ = std::make_unique<track::TrackModel>();
+
+  local_viz_msg_ =
+      visualization::NewVisualizationMessage("base_link", "race_local");
+  global_viz_msg_ =
+      visualization::NewVisualizationMessage("map", "race_global");
 
   ros::Rate loop(40);
   while (ros::ok()) {
     ros::spinOnce();
+
+    visualization::ClearVisualizationMsg(local_viz_msg_);
+    visualization::ClearVisualizationMsg(global_viz_msg_);
+
+    DrawWallCurves();
+
+    local_viz_msg_.header.stamp = ros::Time::now();
+    global_viz_msg_.header.stamp = ros::Time::now();
+    viz_pub_.publish(local_viz_msg_);
+    viz_pub_.publish(global_viz_msg_);
+
     loop.sleep();
   }
 
