@@ -1,4 +1,6 @@
-RaceParameters {
+RaceParameters = {
     odom_topic = "/odom";
-    lidar_topic= "/scan";
+    laser_topic= "/scan";
+
+    wall_color = 0x00ff00;
 }

@@ -62,15 +62,17 @@ void DrawWallCurves() {
   std::vector<Vector2f> left_wall = track_model_->SampleLeftWall();
   std::vector<Vector2f> right_wall = track_model_->SampleRightWall();
 
-  for (size_t i = 1; i < left_wall.size(); i++) {
-    visualization::DrawLine(left_wall[i - 1], left_wall[i], CONFIG_wall_color,
-                            local_viz_msg_);
-  }
+  if (left_wall.size() > 1)
+    for (size_t i = 1; i < left_wall.size(); i++) {
+      visualization::DrawLine(left_wall[i - 1], left_wall[i], CONFIG_wall_color,
+                              local_viz_msg_);
+    }
 
-  for (size_t i = 1; i < right_wall.size(); i++) {
-    visualization::DrawLine(right_wall[i - 1], right_wall[i], CONFIG_wall_color,
-                            local_viz_msg_);
-  }
+  if (right_wall.size() > 1)
+    for (size_t i = 1; i < right_wall.size(); i++) {
+      visualization::DrawLine(right_wall[i - 1], right_wall[i],
+                              CONFIG_wall_color, local_viz_msg_);
+    }
 }
 
 int main(int argc, char** argv) {

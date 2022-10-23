@@ -18,10 +18,11 @@ void TrackModel::UpdatePointcloud(const std::vector<Eigen::Vector2f>& cloud) {
 std::vector<Vector2f> TrackModel::SampleLeftWall(double interval) const {
   std::vector<Vector2f> points;
 
-  for (double t = 0; t < left_wall_t_.back(); t += interval) {
-    points.push_back(
-        Vector2f{left_wall_x_.Evaluate(t), left_wall_y_.Evaluate(t)});
-  }
+  if (left_wall_t_.size() > 0)
+    for (double t = 0; t < left_wall_t_.back(); t += interval) {
+      points.push_back(
+          Vector2f{left_wall_x_.Evaluate(t), left_wall_y_.Evaluate(t)});
+    }
 
   return points;
 }
@@ -29,10 +30,11 @@ std::vector<Vector2f> TrackModel::SampleLeftWall(double interval) const {
 std::vector<Vector2f> TrackModel::SampleRightWall(double interval) const {
   std::vector<Vector2f> points;
 
-  for (double t = 0; t < right_wall_t_.back(); t += interval) {
-    points.push_back(
-        Vector2f{right_wall_x_.Evaluate(t), right_wall_y_.Evaluate(t)});
-  }
+  if (right_wall_t_.size() > 0)
+    for (double t = 0; t < right_wall_t_.back(); t += interval) {
+      points.push_back(
+          Vector2f{right_wall_x_.Evaluate(t), right_wall_y_.Evaluate(t)});
+    }
 
   return points;
 }
