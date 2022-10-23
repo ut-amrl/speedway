@@ -8,7 +8,9 @@
 using Eigen::Vector2f;
 
 namespace track {
-TrackModel::TrackModel() {}
+TrackModel::TrackModel(const uint32_t polynomial_order,
+                       const double wall_tolerance)
+    : order_(polynomial_order), wall_tol_(wall_tolerance) {}
 
 void TrackModel::UpdatePointcloud(const std::vector<Eigen::Vector2f>& cloud) {
   cloud_ = cloud;
@@ -85,8 +87,8 @@ void TrackModel::FitWallPolynomials() {
     cumulative += (left_wall_points_[i] - left_wall_points_[i - 1]).norm();
     left_wall_t_.push_back(cumulative);
   }
-  left_wall_x_.PerformRegression(left_wall_t_, left_vx, ORDER);
-  left_wall_y_.PerformRegression(left_wall_t_, left_vy, ORDER);
+  left_wall_x_.PerformRegression(left_wall_t_, left_vx, order_);
+  left_wall_y_.PerformRegression(left_wall_t_, left_vy, order_);
 
   std::vector<double> right_vx;
   std::vector<double> right_vy;
@@ -94,7 +96,7 @@ void TrackModel::FitWallPolynomials() {
     cumulative += (right_wall_points_[i] - right_wall_points_[i - 1]).norm();
     right_wall_t_.push_back(cumulative);
   }
-  right_wall_x_.PerformRegression(right_wall_t_, right_vx, ORDER);
-  right_wall_y_.PerformRegression(right_wall_t_, right_vy, ORDER);
+  right_wall_x_.PerformRegression(right_wall_t_, right_vx, order_);
+  right_wall_y_.PerformRegression(right_wall_t_, right_vy, order_);
 }
 }  // namespace track

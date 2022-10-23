@@ -22,6 +22,8 @@ CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
 CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
 
 CONFIG_UINT(wall_color, "RaceParameters.wall_color");
+CONFIG_UINT(wall_polynomial_order, "RaceParameters.wall_polynomial_order");
+CONFIG_DOUBLE(wall_tolerance, "RaceParameters.wall_tolerance");
 
 std::unique_ptr<track::TrackModel> track_model_;
 
@@ -94,7 +96,8 @@ int main(int argc, char** argv) {
   viz_pub_ =
       node_handle.advertise<amrl_msgs::VisualizationMsg>("visualization", 1);
 
-  track_model_ = std::make_unique<track::TrackModel>();
+  track_model_ = std::make_unique<track::TrackModel>(
+      CONFIG_wall_polynomial_order, CONFIG_wall_tolerance);
 
   local_viz_msg_ =
       visualization::NewVisualizationMessage("base_link", "race_local");

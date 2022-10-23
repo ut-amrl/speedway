@@ -10,7 +10,7 @@ namespace track {
 
 class TrackModel {
  public:
-  TrackModel();
+  TrackModel(const uint32_t polynomial_order, const double wall_tolerance);
   void UpdatePointcloud(const std::vector<Eigen::Vector2f>& cloud);
 
   std::vector<Eigen::Vector2f> SampleLeftWall(double interval = 0.1) const;
@@ -20,11 +20,13 @@ class TrackModel {
   void SegmentPointcloud();
   void FitWallPolynomials();
 
+  uint32_t order_;
+  double wall_tol_;
+
   std::vector<Eigen::Vector2f> cloud_;
   std::vector<Eigen::Vector2f> left_wall_points_;
   std::vector<Eigen::Vector2f> right_wall_points_;
 
-  static const uint32_t ORDER = 5;
   std::vector<double> left_wall_t_;
   PolynomialRegression left_wall_x_;
   PolynomialRegression left_wall_y_;
