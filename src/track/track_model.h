@@ -24,8 +24,10 @@ class TrackModel {
   std::vector<Eigen::Vector2f> left_wall_points_;
   std::vector<Eigen::Vector2f> right_wall_points_;
 
+  std::vector<double> left_wall_t_;
   PolynomialRegression left_wall_x_;
   PolynomialRegression left_wall_y_;
+  std::vector<double> right_wall_t_;
   PolynomialRegression right_wall_x_;
   PolynomialRegression right_wall_y_;
 };

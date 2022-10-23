@@ -3,6 +3,8 @@
 #include <eigen3/Eigen/Dense>
 #include <vector>
 
+using Eigen::Vector2f;
+
 namespace track {
 TrackModel::TrackModel() {}
 
@@ -13,21 +15,24 @@ void TrackModel::UpdatePointcloud(const std::vector<Eigen::Vector2f>& cloud) {
   FitWallPolynomials();
 }
 
-std::vector<Eigen::Vector2f> TrackModel::SampleLeftWall(double interval) const {
-  std::vector<Eigen::Vector2f> points;
+std::vector<Vector2f> TrackModel::SampleLeftWall(double interval) const {
+  std::vector<Vector2f> points;
 
-  // evaluate the left wall polynomials over a range of t values with the given
-  // interval for x and y and return the resultant points
+  for (double t = 0; t < left_wall_t_.back(); t += interval) {
+    points.push_back(
+        Vector2f{left_wall_x_.Evaluate(t), left_wall_y_.Evaluate(t)});
+  }
 
   return points;
 }
 
-std::vector<Eigen::Vector2f> TrackModel::SampleRightWall(
-    double interval) const {
-  std::vector<Eigen::Vector2f> points;
+std::vector<Vector2f> TrackModel::SampleRightWall(double interval) const {
+  std::vector<Vector2f> points;
 
-  // evaluate the right wall polynomials over a range of t values with the given
-  // interval for x and y and return the resultant points
+  for (double t = 0; t < right_wall_t_.back(); t += interval) {
+    points.push_back(
+        Vector2f{right_wall_x_.Evaluate(t), right_wall_y_.Evaluate(t)});
+  }
 
   return points;
 }
