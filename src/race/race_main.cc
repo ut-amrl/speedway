@@ -6,14 +6,22 @@
 #include <sensor_msgs/LaserScan.h>
 #include <shared/util/timer.h>
 
-namespace {
+#include <eigen3/Eigen/Dense>
+#include <memory>
+#include <vector>
 
+#include "track/track_model.h"
+
+namespace {
 DEFINE_string(config, "config/race.lua", "path to config file");
 
 CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
 CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
 
+std::unique_ptr<track::TrackModel> track_model_;
 }  // namespace
+
+using Eigen::Vector2f;
 
 void OdomCallback(const nav_msgs::Odometry& msg) {
   if (FLAGS_v) {
@@ -26,6 +34,21 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
     LOG(INFO) << "Laser t=" << msg.header.stamp.toSec()
               << ",\tdf=" << GetWallTime() - msg.header.stamp.toSec();
   }
+
+  static std::vector<Vector2f> cloud;
+  cloud.clear();
+
+  for (size_t i = 0; i < (msg.angle_max - msg.angle_min) / msg.angle_increment;
+       i++) {
+    if (msg.ranges[i] <= msg.range_min || msg.ranges[i] >= msg.range_max) {
+      continue;
+    }
+    double angle = msg.angle_min + msg.angle_increment * i;
+    cloud.push_back(
+        Vector2f{msg.ranges[i] * cos(angle) + 0.2, msg.ranges[i] * sin(angle)});
+  }
+
+  track_model_->UpdatePointcloud(cloud);
 }
 
 int main(int argc, char** argv) {
@@ -43,6 +66,8 @@ int main(int argc, char** argv) {
       node_handle.subscribe(CONFIG_odom_topic, 1, &OdomCallback);
   ros::Subscriber laser_sub =
       node_handle.subscribe(CONFIG_laser_topic, 1, &LaserCallback);
+
+  track_model_ = std::make_unique<track::TrackModel>();
 
   ros::Rate loop(40);
   while (ros::ok()) {

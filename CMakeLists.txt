@@ -36,6 +36,7 @@ INCLUDE_DIRECTORIES(src/config_reader/include)
 INCLUDE_DIRECTORIES(src)
 
 ROSBUILD_ADD_EXECUTABLE(race
-                        src/race/race_main.cc)
+                        src/race/race_main.cc
+                        src/track/track_model.cc)
 TARGET_LINK_LIBRARIES(race ${libs})
 
