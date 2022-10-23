@@ -1,4 +1,4 @@
-PROJECT(local_rgb_map)
+PROJECT(speedway)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
 
 MESSAGE(STATUS "Using compiler: ${CMAKE_CXX_COMPILER}")
@@ -38,6 +38,7 @@ INCLUDE_DIRECTORIES(src)
 ROSBUILD_ADD_EXECUTABLE(race
                         src/race/race_main.cc
                         src/track/track_model.cc
+                        src/track/polynomial_regression.cc
                         src/visualization/visualization.cc)
 TARGET_LINK_LIBRARIES(race ${libs})
 
