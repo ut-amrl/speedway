@@ -51,4 +51,19 @@ double PolynomialRegression::Evaluate(const double t) const {
 
   return sum;
 }
+
+PolynomialRegression CreateMidline(const PolynomialRegression& p1,
+                                   const PolynomialRegression& p2) {
+  PolynomialRegression p;
+
+  size_t i = 0;
+  while (i < p1.coeffs_.size() || i < p2.coeffs_.size()) {
+    double a = i < p1.coeffs_.size() ? p1.coeffs_[i] : 0;
+    double b = i < p2.coeffs_.size() ? p2.coeffs_[i] : 0;
+
+    p.coeffs_.push_back(a / 2 + b / 2);
+  }
+
+  return p;
+}
 }  // namespace track
