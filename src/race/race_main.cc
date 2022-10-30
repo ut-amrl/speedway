@@ -21,6 +21,8 @@ DEFINE_string(config, "config/race.lua", "path to config file");
 CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
 CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
 
+CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_location");
+
 CONFIG_UINT(wall_color, "RaceParameters.wall_color");
 CONFIG_UINT(wall_polynomial_order, "RaceParameters.wall_polynomial_order");
 CONFIG_DOUBLE(wall_tolerance, "RaceParameters.wall_tolerance");
@@ -54,10 +56,12 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
     }
     double angle = msg.angle_min + msg.angle_increment * i;
     cloud.push_back(
-        Vector2f{msg.ranges[i] * cos(angle) + 0.2, msg.ranges[i] * sin(angle)});
+        Vector2f{msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)} +
+        CONFIG_laser_location);
   }
 
-  track_model_->UpdatePointcloud(cloud);
+  track_model_->UpdatePointcloud(cloud, msg.angle_min, msg.angle_max,
+                                 msg.angle_increment);
 }
 
 void DrawWallCurves() {
