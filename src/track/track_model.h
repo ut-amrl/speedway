@@ -18,6 +18,11 @@ class TrackModel {
   std::vector<Eigen::Vector2f> SampleLeftWall(double interval = 0.1) const;
   std::vector<Eigen::Vector2f> SampleRightWall(double interval = 0.1) const;
 
+  PolynomialRegression left_wall_x_pol_;
+  PolynomialRegression left_wall_y_pol_;
+  PolynomialRegression right_wall_x_pol_;
+  PolynomialRegression right_wall_y_pol_;
+
  protected:
   void SegmentPointcloud(const float angle_min, const float angle_max,
                          const float increment);
@@ -33,13 +38,9 @@ class TrackModel {
   std::vector<double> left_wall_t_;
   std::vector<double> left_wall_x_;
   std::vector<double> left_wall_y_;
-  PolynomialRegression left_wall_x_pol_;
-  PolynomialRegression left_wall_y_pol_;
 
   std::vector<double> right_wall_t_;
   std::vector<double> right_wall_x_;
   std::vector<double> right_wall_y_;
-  PolynomialRegression right_wall_x_pol_;
-  PolynomialRegression right_wall_y_pol_;
 };
 }  // namespace track

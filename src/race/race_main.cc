@@ -1,3 +1,4 @@
+#include <amrl_msgs/AckermannCurvatureDriveMsg.h>
 #include <config_reader/config_reader.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -10,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "planning/midline_pid.h"
 #include "track/track_model.h"
 #include "visualization/visualization.h"
 
@@ -28,6 +30,9 @@ CONFIG_UINT(wall_polynomial_order, "RaceParameters.wall_polynomial_order");
 CONFIG_DOUBLE(wall_tolerance, "RaceParameters.wall_tolerance");
 
 std::unique_ptr<track::TrackModel> track_model_;
+std::unique_ptr<planning::MidlinePidPlanner> midline_planner_;
+
+ros::Publisher drive_pub_;
 
 ros::Publisher viz_pub_;
 amrl_msgs::VisualizationMsg local_viz_msg_;
@@ -62,6 +67,11 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
 
   track_model_->UpdatePointcloud(cloud, msg.angle_min, msg.angle_max,
                                  msg.angle_increment);
+  midline_planner_->SetPolynomials(
+      track::Curve(track_model_->left_wall_x_pol_,
+                   track_model_->left_wall_y_pol_),
+      track::Curve(track_model_->right_wall_x_pol_,
+                   track_model_->right_wall_y_pol_));
 }
 
 void DrawWallCurves() {
@@ -97,11 +107,15 @@ int main(int argc, char** argv) {
   ros::Subscriber laser_sub =
       node_handle.subscribe(CONFIG_laser_topic, 1, &LaserCallback);
 
+  drive_pub_ = node_handle.advertise<amrl_msgs::AckermannCurvatureDriveMsg>(
+      "ackermann_curvature_drive", 1);
   viz_pub_ =
       node_handle.advertise<amrl_msgs::VisualizationMsg>("visualization", 1);
 
   track_model_ = std::make_unique<track::TrackModel>(
       CONFIG_wall_polynomial_order, CONFIG_wall_tolerance);
+  midline_planner_ =
+      std::make_unique<planning::MidlinePidPlanner>(0.1, 0, 0, 1);
 
   local_viz_msg_ =
       visualization::NewVisualizationMessage("base_link", "race_local");
@@ -116,6 +130,14 @@ int main(int argc, char** argv) {
     visualization::ClearVisualizationMsg(global_viz_msg_);
 
     DrawWallCurves();
+
+    double curvature = midline_planner_->Evaluate();
+
+    auto drive_msg = amrl_msgs::AckermannCurvatureDriveMsg();
+    drive_msg.header.stamp = ros::Time::now();
+    drive_msg.curvature = curvature;
+    drive_msg.velocity = 0.5;
+    drive_pub_.publish(drive_msg);
 
     local_viz_msg_.header.stamp = ros::Time::now();
     global_viz_msg_.header.stamp = ros::Time::now();

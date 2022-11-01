@@ -117,11 +117,6 @@ void TrackModel::FitWallPolynomials() {
     LOG(WARNING) << "Right wall point cloud is empty.";
     return;
   }
-  LOG(INFO) << "sizes";
-  LOG(INFO) << right_wall_points_.size();
-  LOG(INFO) << right_wall_t_.size();
-  LOG(INFO) << right_wall_x_.size();
-  LOG(INFO) << right_wall_y_.size();
 
   left_wall_x_pol_.PerformRegression(left_wall_t_, left_wall_x_, order_);
   left_wall_y_pol_.PerformRegression(left_wall_t_, left_wall_y_, order_);

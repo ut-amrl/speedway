@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <eigen3/Eigen/Dense>
 #include <vector>
 
 namespace track {
@@ -12,11 +13,17 @@ class PolynomialRegression {
                          const std::vector<double>& v, const uint32_t order);
   double Evaluate(const double t) const;
 
-  friend PolynomialRegression CreateMidline(const PolynomialRegression& p1,
-                                            const PolynomialRegression& p2);
-
- protected:
   std::vector<double> coeffs_;
-  uint32_t order_;
 };
+
+class Curve {
+ public:
+  PolynomialRegression x;
+  PolynomialRegression y;
+  Eigen::Vector2f Evaluate(const double t) const;
+  Curve(PolynomialRegression x, PolynomialRegression y) : x(x), y(y) {}
+  Curve() {}
+};
+
+Curve CreateMidline(const Curve& p1, const Curve& p2);
 }  // namespace track

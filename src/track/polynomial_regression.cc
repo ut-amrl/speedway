@@ -52,18 +52,56 @@ double PolynomialRegression::Evaluate(const double t) const {
   return sum;
 }
 
-PolynomialRegression CreateMidline(const PolynomialRegression& p1,
-                                   const PolynomialRegression& p2) {
-  PolynomialRegression p;
+Curve CreateMidline(const Curve& left, const Curve& right) {
+  PolynomialRegression mid_x, mid_y;
 
-  size_t i = 0;
-  while (i < p1.coeffs_.size() || i < p2.coeffs_.size()) {
-    double a = i < p1.coeffs_.size() ? p1.coeffs_[i] : 0;
-    double b = i < p2.coeffs_.size() ? p2.coeffs_[i] : 0;
+  // Compute mid_x
+  const PolynomialRegression &left_x = left.x, &right_x = right.x;
+  std::vector<double> reversed_left_x, reversed_right_x;
+  for (int i = (int)left_x.coeffs_.size() - 1; i >= 0; i--) {
+    reversed_left_x.push_back(left_x.coeffs_[i]);
+  }
+  for (int i = (int)right_x.coeffs_.size() - 1; i >= 0; i--) {
+    reversed_right_x.push_back(right_x.coeffs_[i]);
+  }
+  while (reversed_left_x.size() < reversed_right_x.size())
+    reversed_left_x.push_back(0);
+  while (reversed_right_x.size() < reversed_left_x.size())
+    reversed_right_x.push_back(0);
+  std::reverse(reversed_left_x.begin(), reversed_left_x.end());
+  std::reverse(reversed_right_x.begin(), reversed_right_x.end());
 
-    p.coeffs_.push_back(a / 2 + b / 2);
+  for (size_t i = 0; i < reversed_left_x.size(); i++) {
+    double avg_coeff = (reversed_left_x[i] + reversed_right_x[i]) / 2;
+    mid_x.coeffs_.push_back(avg_coeff);
   }
 
-  return p;
+  // Compute mid_y
+  const PolynomialRegression &left_y = left.y, &right_y = right.y;
+  std::vector<double> reversed_left_y, reversed_right_y;
+  for (int i = (int)left_y.coeffs_.size() - 1; i >= 0; i--) {
+    reversed_left_y.push_back(left_y.coeffs_[i]);
+  }
+  for (int i = (int)right_y.coeffs_.size() - 1; i >= 0; i--) {
+    reversed_right_y.push_back(right_y.coeffs_[i]);
+  }
+  while (reversed_left_y.size() < reversed_right_y.size())
+    reversed_left_y.push_back(0);
+  while (reversed_right_y.size() < reversed_left_y.size())
+    reversed_right_y.push_back(0);
+  std::reverse(reversed_left_y.begin(), reversed_left_y.end());
+  std::reverse(reversed_right_y.begin(), reversed_right_y.end());
+
+  for (size_t i = 0; i < reversed_left_y.size(); i++) {
+    double avg_coeff = (reversed_left_y[i] + reversed_right_y[i]) / 2;
+    mid_y.coeffs_.push_back(avg_coeff);
+  }
+  
+  return Curve(mid_x, mid_y);
 }
+
+Eigen::Vector2f Curve::Evaluate(const double t) const {
+  return Eigen::Vector2f(x.Evaluate(t), y.Evaluate(t));
+}
+
 }  // namespace track
