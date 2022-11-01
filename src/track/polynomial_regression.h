@@ -14,6 +14,14 @@ class PolynomialRegression {
   double Evaluate(const double t) const;
 
   std::vector<double> coeffs_;
+
+  double max_t;
+};
+
+struct Point {
+  double t;
+  double x, y;
+  Point(double t, double x = 0, double y = 0) : t(t), x(x), y(y) {}
 };
 
 class Curve {
@@ -21,8 +29,20 @@ class Curve {
   PolynomialRegression x;
   PolynomialRegression y;
   Eigen::Vector2f Evaluate(const double t) const;
-  Curve(PolynomialRegression x, PolynomialRegression y) : x(x), y(y) {}
+  double max_t;
+  Curve(PolynomialRegression x, PolynomialRegression y)
+      : x(x), y(y), max_t(std::min(x.max_t, y.max_t)) {}
   Curve() {}
+
+  std::vector<Point> sample_along() {
+    std::vector<Point> sampled_points;
+    double t = 0, step = 0.05;
+    while (t < max_t) {
+      sampled_points.push_back(Point(t, x.Evaluate(t), y.Evaluate(t)));
+      t += step;
+    }
+    return sampled_points;
+  }
 };
 
 Curve CreateMidline(const Curve& p1, const Curve& p2);

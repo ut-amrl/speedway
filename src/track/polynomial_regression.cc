@@ -41,6 +41,8 @@ void PolynomialRegression::PerformRegression(const std::vector<double>& t,
   for (size_t k = 0; k < order + 1; k++) {
     coeffs_[k] = result[k];
   }
+
+  max_t = t[t.size() - 1];
 }
 
 double PolynomialRegression::Evaluate(const double t) const {
@@ -96,7 +98,7 @@ Curve CreateMidline(const Curve& left, const Curve& right) {
     double avg_coeff = (reversed_left_y[i] + reversed_right_y[i]) / 2;
     mid_y.coeffs_.push_back(avg_coeff);
   }
-  
+
   return Curve(mid_x, mid_y);
 }
 

@@ -29,7 +29,16 @@ void MidlinePidPlanner::SetPolynomials(const track::Curve& left,
 double MidlinePidPlanner::ErrorTerm() {
   lookahead_ = 1;
 
-  Eigen::Vector2f p(midline_.Evaluate(lookahead_));
+  std::vector<track::Point> points = midline_.sample_along();
+  track::Point min_pt = points[0];
+  for (int i = 0; i < (int)points.size(); i++) {
+    if (std::sqrt(std::pow(points[i].x, 2) + std::pow(points[i].y, 2)) <
+        std::sqrt(std::pow(min_pt.x, 2) + std::pow(min_pt.y, 2))) {
+      min_pt = points[i];
+    }
+  }
+
+  Eigen::Vector2f p(midline_.Evaluate(min_pt.t + lookahead_));
 
   return atan2(p.y(), p.x());
 }
