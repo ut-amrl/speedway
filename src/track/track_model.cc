@@ -120,8 +120,12 @@ void TrackModel::FitWallPolynomials() {
 
   left_wall_x_pol_.PerformRegression(left_wall_t_, left_wall_x_, order_);
   left_wall_y_pol_.PerformRegression(left_wall_t_, left_wall_y_, order_);
+  left_wall_x_pol_.max_t = left_wall_t_.back();
+  left_wall_y_pol_.max_t = left_wall_t_.back();
 
   right_wall_x_pol_.PerformRegression(right_wall_t_, right_wall_x_, order_);
   right_wall_y_pol_.PerformRegression(right_wall_t_, right_wall_y_, order_);
+  right_wall_x_pol_.max_t = right_wall_t_.back();
+  right_wall_y_pol_.max_t = right_wall_t_.back();
 }
 }  // namespace track

@@ -29,6 +29,10 @@ CONFIG_UINT(wall_color, "RaceParameters.wall_color");
 CONFIG_UINT(wall_polynomial_order, "RaceParameters.wall_polynomial_order");
 CONFIG_DOUBLE(wall_tolerance, "RaceParameters.wall_tolerance");
 
+CONFIG_DOUBLE(pid_kp, "RaceParameters.midline_pid.kp");
+CONFIG_DOUBLE(pid_ki, "RaceParameters.midline_pid.ki");
+CONFIG_DOUBLE(pid_kd, "RaceParameters.midline_pid.kd");
+
 std::unique_ptr<track::TrackModel> track_model_;
 std::unique_ptr<planning::MidlinePidPlanner> midline_planner_;
 
@@ -77,6 +81,7 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
 void DrawWallCurves() {
   std::vector<Vector2f> left_wall = track_model_->SampleLeftWall();
   std::vector<Vector2f> right_wall = track_model_->SampleRightWall();
+  std::vector<track::Point> midline = midline_planner_->GetPoints();
 
   if (left_wall.size() > 1)
     for (size_t i = 1; i < left_wall.size(); i++) {
@@ -87,6 +92,14 @@ void DrawWallCurves() {
   if (right_wall.size() > 1)
     for (size_t i = 1; i < right_wall.size(); i++) {
       visualization::DrawLine(right_wall[i - 1], right_wall[i],
+                              CONFIG_wall_color, local_viz_msg_);
+    }
+
+  LOG(INFO) << midline.size();
+  if (midline.size() > 1)
+    for (size_t i = 1; i < midline.size(); i++) {
+      visualization::DrawLine(Vector2f{midline[i - 1].x, midline[i - 1].y},
+                              Vector2f{midline[i].x, midline[i].y},
                               CONFIG_wall_color, local_viz_msg_);
     }
 }
@@ -114,8 +127,8 @@ int main(int argc, char** argv) {
 
   track_model_ = std::make_unique<track::TrackModel>(
       CONFIG_wall_polynomial_order, CONFIG_wall_tolerance);
-  midline_planner_ =
-      std::make_unique<planning::MidlinePidPlanner>(0.1, 0, 0, 1);
+  midline_planner_ = std::make_unique<planning::MidlinePidPlanner>(
+      CONFIG_pid_kp, CONFIG_pid_ki, CONFIG_pid_kd, 1);
 
   local_viz_msg_ =
       visualization::NewVisualizationMessage("base_link", "race_local");

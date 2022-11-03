@@ -77,6 +77,7 @@ Curve CreateMidline(const Curve& left, const Curve& right) {
     double avg_coeff = (reversed_left_x[i] + reversed_right_x[i]) / 2;
     mid_x.coeffs_.push_back(avg_coeff);
   }
+  mid_x.max_t = std::min(left.max_t, right.max_t);
 
   // Compute mid_y
   const PolynomialRegression &left_y = left.y, &right_y = right.y;
@@ -98,6 +99,7 @@ Curve CreateMidline(const Curve& left, const Curve& right) {
     double avg_coeff = (reversed_left_y[i] + reversed_right_y[i]) / 2;
     mid_y.coeffs_.push_back(avg_coeff);
   }
+  mid_y.max_t = std::min(left.max_t, right.max_t);
 
   return Curve(mid_x, mid_y);
 }

@@ -10,6 +10,7 @@ class MidlinePidPlanner {
   MidlinePidPlanner(double kp, double ki, double kd, double lookahead);
   double Evaluate();
   void SetPolynomials(const track::Curve& left, const track::Curve& right);
+  std::vector<track::Point> GetPoints();
 
  protected:
   double ErrorTerm();

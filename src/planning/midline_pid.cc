@@ -1,4 +1,6 @@
-#include "midline_pid.h"
+#include "planning/midline_pid.h"
+
+#include <glog/logging.h>
 
 #include <eigen3/Eigen/Dense>
 
@@ -26,10 +28,18 @@ void MidlinePidPlanner::SetPolynomials(const track::Curve& left,
   midline_ = track::CreateMidline(left, right);
 }
 
+std::vector<track::Point> MidlinePidPlanner::GetPoints() {
+  return midline_.sample_along();
+}
+
 double MidlinePidPlanner::ErrorTerm() {
   lookahead_ = 1;
 
   std::vector<track::Point> points = midline_.sample_along();
+  if (points.size() == 0) {
+    LOG(ERROR) << "Midline sample returned empty";
+    return 0;
+  }
   track::Point min_pt = points[0];
   for (int i = 0; i < (int)points.size(); i++) {
     if (std::sqrt(std::pow(points[i].x, 2) + std::pow(points[i].y, 2)) <
@@ -38,7 +48,8 @@ double MidlinePidPlanner::ErrorTerm() {
     }
   }
 
-  Eigen::Vector2f p(midline_.Evaluate(min_pt.t + lookahead_));
+  Eigen::Vector2f p(
+      midline_.Evaluate(std::min(min_pt.t + lookahead_, midline_.max_t)));
 
   return atan2(p.y(), p.x());
 }
