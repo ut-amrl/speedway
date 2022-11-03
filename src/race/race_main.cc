@@ -12,11 +12,14 @@
 
 #include "track/track_model.h"
 #include "visualization/visualization.h"
+#include "profiler/profiler.h"
 
 using Eigen::Vector2f;
 
 namespace {
 DEFINE_string(config, "config/race.lua", "path to config file");
+
+CONFIG_STRING(motion_profiler_config, "RaceParameters.profile_config");
 
 CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
 CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
@@ -28,6 +31,7 @@ CONFIG_UINT(wall_polynomial_order, "RaceParameters.wall_polynomial_order");
 CONFIG_DOUBLE(wall_tolerance, "RaceParameters.wall_tolerance");
 
 std::unique_ptr<track::TrackModel> track_model_;
+std::unique_ptr<profiler::Profiler> motion_profiler_;
 
 ros::Publisher viz_pub_;
 amrl_msgs::VisualizationMsg local_viz_msg_;
@@ -62,6 +66,9 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
 
   track_model_->UpdatePointcloud(cloud, msg.angle_min, msg.angle_max,
                                  msg.angle_increment);
+
+  /* motion_profiler_->UpdatePointcloud(cloud, msg.angle_min, msg.angle_max, */
+  /*                               msg.angle_increment); */
 }
 
 void DrawWallCurves() {
@@ -103,6 +110,8 @@ int main(int argc, char** argv) {
   track_model_ = std::make_unique<track::TrackModel>(
       CONFIG_wall_polynomial_order, CONFIG_wall_tolerance);
 
+  motion_profiler_ = std::make_unique<profiler::Profiler>(CONFIG_motion_profiler_config);
+
   local_viz_msg_ =
       visualization::NewVisualizationMessage("base_link", "race_local");
   global_viz_msg_ =
@@ -116,6 +125,8 @@ int main(int argc, char** argv) {
     visualization::ClearVisualizationMsg(global_viz_msg_);
 
     DrawWallCurves();
+
+    motion_profiler_->Profile();
 
     local_viz_msg_.header.stamp = ros::Time::now();
     global_viz_msg_.header.stamp = ros::Time::now();
