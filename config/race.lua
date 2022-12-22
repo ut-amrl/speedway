@@ -1,6 +1,8 @@
 RaceParameters = {
     odom_topic = "/odom";
     laser_topic = "/scan";
+    nav_target_topic = "/set_nav_target";
+    localization_topic = "/localization";
 
     laser_location = { 0.2, 0 };
 
