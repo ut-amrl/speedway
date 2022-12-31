@@ -2,13 +2,18 @@
 #include "visualization/visualization.h"
 #include <cmath>
 #include <vector>
+#include <cstdlib>
 #include <eigen3/Eigen/Dense>
+
+#define RAND (((double)rand()) / RAND_MAX)
 
 using Eigen::Vector2f;
 using Eigen::Vector3f;
 
 namespace reset{
-    ResetPolicy::ResetPolicy() {}
+    ResetPolicy::ResetPolicy() {
+        srand((unsigned) time(NULL));
+    }
 
     ResetPolicy::~ResetPolicy() {
         delete goal_pos;
@@ -18,13 +23,14 @@ namespace reset{
     }
 
     void ResetPolicy::NavTargetCallback(const amrl_msgs::Localization2DMsg &msg){
-        double x = msg.pose.x;
+        /*double x = msg.pose.x;
         double y = msg.pose.y;
         double theta = msg.pose.theta;
         delete goal_pos;
         goal_pos = new Position(x, y, theta);
         delete path;
-        path = nullptr;
+        path = nullptr;*/
+        // For the state machine, we will not listen to goal commands
     }
         
     void ResetPolicy::LocalizationCallback(const amrl_msgs::Localization2DMsg &msg, amrl_msgs::VisualizationMsg &global_viz_msg_){
@@ -49,7 +55,7 @@ namespace reset{
         unsigned closest_pt_idx = 0;
         double closest_pt_dist = 1000;
         for(unsigned i = 1; i<path_points.size(); i++){
-            visualization::DrawLine(Vector2f{path_points[i-1][0], path_points[i-1][1]}, Vector2f{path_points[i][0], path_points[i][1]}, 0x0000ff, global_viz_msg_);
+            if(state == -1) visualization::DrawLine(Vector2f{path_points[i-1][0], path_points[i-1][1]}, Vector2f{path_points[i][0], path_points[i][1]}, 0x0000ff, global_viz_msg_);
             double dist = sqrt((msg.pose.x-path_points[i][0])*(msg.pose.x-path_points[i][0]) + (msg.pose.y-path_points[i][1])*(msg.pose.y-path_points[i][1]));
             if(dist < closest_pt_dist) {
                 closest_pt_dist = dist;
@@ -143,21 +149,21 @@ namespace reset{
                 best_curv = k;
                 best_end_robot_pos = end_robot_pos;
             }
-            draw_state(end_robot_pos, end_robot_theta);
+            if(state == -1) draw_state(end_robot_pos, end_robot_theta);
         }
         vel_cmd = 0.5;
         curv_cmd = best_curv;
-        draw_state(Vector2f{path_points[target_idx][0], path_points[target_idx][1]}, path_points[target_idx][2], 0x000000);
+        if(state == -1) draw_state(Vector2f{path_points[target_idx][0], path_points[target_idx][1]}, path_points[target_idx][2], 0x000000);
 
         // If dist to goal < threshold, stop
         if(goal_pos != nullptr){
             // Draw the goal state
             Vector2f p{goal_pos->x + 0.5*cos(goal_pos->theta), goal_pos->y + 0.5*sin(goal_pos->theta)};
-            visualization::DrawLine(Vector2f{goal_pos->x, goal_pos->y}, p, 0xff00ff, global_viz_msg_);
+            if(state == -1) visualization::DrawLine(Vector2f{goal_pos->x, goal_pos->y}, p, 0xff00ff, global_viz_msg_);
             Vector2f a{goal_pos->x + 0.42*cos(goal_pos->theta+0.22), goal_pos->y + 0.42*sin(goal_pos->theta+0.22)};
             Vector2f b{goal_pos->x + 0.42*cos(goal_pos->theta-0.22), goal_pos->y + 0.42*sin(goal_pos->theta-0.22)};
-            visualization::DrawLine(a, p, 0xff00ff, global_viz_msg_);
-            visualization::DrawLine(b, p, 0xff00ff, global_viz_msg_);
+            if(state == -1) visualization::DrawLine(a, p, 0xff00ff, global_viz_msg_);
+            if(state == -1) visualization::DrawLine(b, p, 0xff00ff, global_viz_msg_);
 
             //double dist = sqrt((msg.pose.x-goal_pos->x)*(msg.pose.x-goal_pos->x) + (msg.pose.y-goal_pos->y)*(msg.pose.y-goal_pos->y) + (sin(msg.pose.theta)-sin(goal_pos->theta))*(sin(msg.pose.theta)-sin(goal_pos->theta)) + (cos(msg.pose.theta)-cos(goal_pos->theta))*(cos(msg.pose.theta)-cos(goal_pos->theta)));
             //double dist = sqrt((msg.pose.x-goal_pos->x)*(msg.pose.x-goal_pos->x) + (msg.pose.y-goal_pos->y)*(msg.pose.y-goal_pos->y));
@@ -166,11 +172,29 @@ namespace reset{
                 curv_cmd = 0.0;
                 delete goal_pos;
                 goal_pos = nullptr;
+                delete path;
+                path = nullptr;
+                state = 0;
+                visualization::ClearVisualizationMsg(global_viz_msg_);
             }
         }
     }
 
     Command ResetPolicy::ComputeCommand(){
+        if(state == 0){
+            rand_v = RAND * 2 + 1;
+            rand_k = RAND * 2 - 1;
+            state = 1;
+            return Command(rand_v, rand_k);
+        }else if(state < state_max && state > 0){
+            rand_v += (RAND*0.5 - 0.25);
+            rand_k += (RAND*0.5 - 0.25);
+            state++;
+            return Command(rand_v, rand_k);
+        }else if(state == state_max){
+            state = -1;
+            goal_pos = new Position(8, 4, 0);
+        }
         return Command(vel_cmd, curv_cmd);
     }
 }

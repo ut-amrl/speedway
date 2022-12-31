@@ -21,6 +21,8 @@ namespace reset{
         Position *goal_pos = nullptr;
         double vel_cmd = 0, curv_cmd = 0;
         DubinsPath *path = nullptr;
+        int state = 0, state_max = 300;
+        double rand_v, rand_k;
 
     public:
         ResetPolicy();
