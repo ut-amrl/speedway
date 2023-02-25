@@ -60,17 +60,22 @@ class PathSamplerBase {
   float angle_;
   Eigen::Vector2f vel_;
   Eigen::Vector2f goal_;
-  std::vector<Eigen::Vector2f> points_;
+  std::vector<Eigen::Vector2f> pointcloud_;
 
   virtual void Init(const MotionParameters& params) = 0;
   virtual std::vector<std::shared_ptr<PathOptionBase>> Sample(
       const int num_samples) = 0;
 
   virtual void UpdateOdometry(const Eigen::Vector2f& odom_loc,
-                              const float odom_angle) = 0;
-  virtual void UpdateVelocity(const Eigen::Vector2f& vel) = 0;
-  virtual void UpdateGoal(const Eigen::Vector2f& goal) = 0;
-  virtual void UpdatePointcloud(const std::vector<Eigen::Vector2f>& points) = 0;
+                              const float odom_angle) {
+    loc_ = odom_loc;
+    angle_ = odom_angle;
+  }
+  virtual void UpdateVelocity(const Eigen::Vector2f& vel) { vel_ = vel; }
+  virtual void UpdateGoal(const Eigen::Vector2f& goal) { goal_ = goal; }
+  virtual void UpdatePointcloud(const std::vector<Eigen::Vector2f>& points) {
+    pointcloud_ = points;
+  }
 };
 
 class PathEvaluatorBase {
@@ -81,17 +86,22 @@ class PathEvaluatorBase {
   float angle_;
   Eigen::Vector2f vel_;
   Eigen::Vector2f goal_;
-  std::vector<Eigen::Vector2f> points_;
+  std::vector<Eigen::Vector2f> pointcloud_;
 
   virtual void Init(const MotionParameters& params) = 0;
   virtual std::shared_ptr<PathOptionBase> FindBest(
       const std::vector<std::shared_ptr<PathOptionBase>>& paths) = 0;
 
   virtual void UpdateOdometry(const Eigen::Vector2f& odom_loc,
-                              const float odom_angle) = 0;
-  virtual void UpdateVelocity(const Eigen::Vector2f& vel) = 0;
-  virtual void UpdateGoal(const Eigen::Vector2f& goal) = 0;
-  virtual void UpdatePointcloud(const std::vector<Eigen::Vector2f>& points) = 0;
+                              const float odom_angle) {
+    loc_ = odom_loc;
+    angle_ = odom_angle;
+  }
+  virtual void UpdateVelocity(const Eigen::Vector2f& vel) { vel_ = vel; }
+  virtual void UpdateGoal(const Eigen::Vector2f& goal) { goal_ = goal; }
+  virtual void UpdatePointcloud(const std::vector<Eigen::Vector2f>& points) {
+    pointcloud_ = points;
+  }
 };
 
 }  // namespace motion
