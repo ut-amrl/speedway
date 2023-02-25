@@ -38,6 +38,8 @@ INCLUDE_DIRECTORIES(src)
 ROSBUILD_ADD_EXECUTABLE(race
                         src/race/race_main.cc
                         src/race/race.cc
+                        src/motion/ackermann_sampler.cc
+                        src/motion/linear_evaluator.cc
                         src/track/track_model.cc
                         src/track/polynomial_regression.cc
                         src/visualization/visualization.cc)
