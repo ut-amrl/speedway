@@ -37,8 +37,8 @@ INCLUDE_DIRECTORIES(src)
 
 ROSBUILD_ADD_EXECUTABLE(race
                         src/race/race_main.cc
+                        src/race/race.cc
                         src/track/track_model.cc
                         src/track/polynomial_regression.cc
                         src/visualization/visualization.cc)
 TARGET_LINK_LIBRARIES(race ${libs})
-

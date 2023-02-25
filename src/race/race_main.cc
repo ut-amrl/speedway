@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "race/race.h"
 #include "track/track_model.h"
 #include "visualization/visualization.h"
 
@@ -38,6 +39,13 @@ void OdomCallback(const nav_msgs::Odometry& msg) {
   if (FLAGS_v) {
     LOG(INFO) << "Odometry t=" << msg.header.stamp.toSec();
   }
+
+  race_->UpdateOdometry(
+      Eigen::Vector3f(msg.pose.pose.position.x, msg.pose.pose.position.y,
+                      msg.pose.pose.position.z),
+      Eigen::Quaternionf(
+          msg.pose.pose.orientation.w, msg.pose.pose.orientation.x,
+          msg.pose.pose.orientation.y, msg.pose.pose.orientation.z));
 }
 
 void LaserCallback(const sensor_msgs::LaserScan& msg) {
@@ -72,6 +80,8 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "race");
   ros::NodeHandle node_handle;
 
+  race_ = std::make_unique<race::Race>();
+
   ros::Subscriber odom_sub =
       node_handle.subscribe(CONFIG_odom_topic, 1, &OdomCallback);
   ros::Subscriber laser_sub =
@@ -91,6 +101,10 @@ int main(int argc, char** argv) {
 
     visualization::ClearVisualizationMsg(local_viz_msg_);
     visualization::ClearVisualizationMsg(global_viz_msg_);
+
+    Vector2f cmd_vel = {0, 0};
+    float cmd_angle_vel = 0;
+    race_->Run(cmd_vel, cmd_angle_vel);
 
     local_viz_msg_.header.stamp = ros::Time::now();
     global_viz_msg_.header.stamp = ros::Time::now();
