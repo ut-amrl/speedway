@@ -39,7 +39,9 @@ ROSBUILD_ADD_EXECUTABLE(race
                         src/race/race_main.cc
                         src/race/race.cc
                         src/motion/ackermann_sampler.cc
+                        src/motion/constant_curvature_arc.cc
                         src/motion/linear_evaluator.cc
+                        src/motion/motion_primitives.cc
                         src/track/track_model.cc
                         src/track/polynomial_regression.cc
                         src/visualization/visualization.cc)

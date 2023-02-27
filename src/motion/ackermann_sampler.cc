@@ -1,5 +1,7 @@
 #include "motion/ackermann_sampler.h"
 
+#include "motion/constant_curvature_arc.h"
+
 // TODO: Implement this
 
 namespace motion {

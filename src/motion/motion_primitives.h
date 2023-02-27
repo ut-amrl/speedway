@@ -4,7 +4,11 @@
 #include <memory>
 #include <vector>
 
+#include "math/poses_2d.h"
+
 namespace motion {
+
+static const float kEpsilon = 1e-6;
 
 class MotionLimits {
  public:
@@ -20,6 +24,7 @@ class MotionLimits {
 class MotionParameters {};
 
 class PathOptionBase {
+ public:
   // Free path length of the rollout -- this is the cumulative free space
   // distance along the direction of the rollout along the path, $\int
   // ||v(t)||dt$ where $v(t)$ is the instantaneous velocity.
@@ -30,18 +35,18 @@ class PathOptionBase {
   // $\dot{\theta}(t)$ is the instantaneous angular velocity.
   virtual float AngularLength() const = 0;
 
-  // The pose of the robot at the end of the path rollout.
-  virtual Eigen::Vector2f EndPoint() const = 0;
-
-  // Return the pose the robot would be at for fraction f into the path rollout.
-  // f \in [0, 1]
-  virtual Eigen::Vector2f GetIntermediateState(float f) const = 0;
-
   // The obstacle clearance along the path.
   virtual float Clearance() const = 0;
 
   // Indicates whether the path rollout terminates at an obstacle.
   virtual bool IsObstacleConstrained() const = 0;
+
+  // The pose of the robot at the end of the path rollout.
+  virtual pose_2d::Pose2Df EndPoint() const = 0;
+
+  // Return the pose the robot would be at for fraction f into the path rollout.
+  // f \in [0, 1]
+  virtual pose_2d::Pose2Df GetIntermediateState(float f) const = 0;
 
   // Get actuation commands for the robot to execute this rollout in terms of
   // the robot's linear and angular velocity commands for the specified control
@@ -103,5 +108,12 @@ class PathEvaluatorBase {
     pointcloud_ = points;
   }
 };
+
+float Run1DTimeOptimalControl(const MotionLimits& limits,
+                              const float x_init,
+                              const float v_init,
+                              const float x_final,
+                              const float v_final,
+                              const float dt);
 
 }  // namespace motion
