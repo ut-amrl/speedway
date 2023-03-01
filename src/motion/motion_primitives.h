@@ -15,13 +15,23 @@ class MotionLimits {
   float max_vel_;
   float max_accel_;
   float max_decel_;
-
-  MotionLimits() : max_vel_(0), max_accel_(0), max_decel_(0) {}
-  MotionLimits(float max_vel, float max_accel, float max_decel)
-      : max_vel_(max_vel), max_accel_(max_accel), max_decel_(max_decel) {}
 };
 
-class MotionParameters {};
+class MotionParameters {
+ public:
+  MotionLimits limits_;
+
+  float robot_length_;
+  float robot_width_;
+  float base_link_offset_;
+
+  float max_free_path_length_;
+
+  float max_clearance_;
+  float obstacle_margin_;
+  // fraction of the path past which not to consider clearance
+  float clearance_clip_fraction_;
+};
 
 class PathOptionBase {
  public:
@@ -44,13 +54,13 @@ class PathOptionBase {
   // The pose of the robot at the end of the path rollout.
   virtual pose_2d::Pose2Df EndPoint() const = 0;
 
-  // Return the pose the robot would be at for fraction f into the path rollout.
-  // f \in [0, 1]
+  // Return the pose the robot would be at for fraction f into the path
+  // rollout. f \in [0, 1]
   virtual pose_2d::Pose2Df GetIntermediateState(float f) const = 0;
 
   // Get actuation commands for the robot to execute this rollout in terms of
-  // the robot's linear and angular velocity commands for the specified control
-  // period.
+  // the robot's linear and angular velocity commands for the specified
+  // control period.
   virtual void GetControls(const MotionLimits& limits, const float dt,
                            const Eigen::Vector2f& linear_vel,
                            const float angular_vel, Eigen::Vector2f& vel_cmd,
@@ -109,11 +119,8 @@ class PathEvaluatorBase {
   }
 };
 
-float Run1DTimeOptimalControl(const MotionLimits& limits,
-                              const float x_init,
-                              const float v_init,
-                              const float x_final,
-                              const float v_final,
-                              const float dt);
+float Run1DTimeOptimalControl(const MotionLimits& limits, const float x_init,
+                              const float v_init, const float x_final,
+                              const float v_final, const float dt);
 
 }  // namespace motion

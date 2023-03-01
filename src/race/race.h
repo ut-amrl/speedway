@@ -10,8 +10,8 @@ namespace race {
 
 class RaceParameters {
  public:
-  motion::MotionLimits limits_;
   motion::MotionParameters motion_params_;
+  int num_samples_;
 };
 
 class Race {

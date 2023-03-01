@@ -57,6 +57,9 @@ void Race::Run(Eigen::Vector2f& cmd_vel, float& cmd_angle_vel) {
     return;
   }
 
+  // auto samples = path_sampler_->Sample(params_.num_samples_);
+  // auto best_path = path_evaluator_->FindBest(samples);
+
   cmd_vel = {0, 0};
   cmd_angle_vel = 0;
 }

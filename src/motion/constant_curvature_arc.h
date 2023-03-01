@@ -1,16 +1,20 @@
 #pragma once
 
+#include <eigen3/Eigen/Dense>
+
 #include "motion/motion_primitives.h"
 
 namespace motion {
 
-class ConstantCurvatureArc : PathOptionBase {
+class ConstantCurvatureArc : public PathOptionBase {
  public:
   float curvature_;
   float length_;
   float angular_length_;
   float clearance_;
+
   bool obstacle_constrained_;
+  Eigen::Vector2f obstruction_;
 
   ConstantCurvatureArc();
   ConstantCurvatureArc(const float curvature);
