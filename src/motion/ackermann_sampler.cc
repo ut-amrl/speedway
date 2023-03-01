@@ -7,9 +7,6 @@
 #include "math/math_util.h"
 #include "motion/constant_curvature_arc.h"
 
-CONFIG_FLOAT(max_curvature, "AckermannSampler.max_curvature");
-CONFIG_BOOL(clip_cpoa, "AckermannSampler.clip_cpoa");
-
 using Eigen::Vector2f;
 
 namespace motion {
@@ -20,8 +17,8 @@ void AckermannSampler::Init(const MotionParameters& params) {
 
 std::vector<std::shared_ptr<PathOptionBase>> AckermannSampler::Sample(
     const int num_samples) {
-  const float c_min = -CONFIG_max_curvature;
-  const float c_max = CONFIG_max_curvature;
+  const float c_min = -params_.max_curvature_;
+  const float c_max = params_.max_curvature_;
   const float dc = (c_max - c_min) / num_samples;
 
   std::vector<std::shared_ptr<PathOptionBase>> samples;
@@ -41,7 +38,7 @@ void AckermannSampler::SetMaxPathLength(
   // TODO: change this if we change the final velocity for TOC
   const float stopping_dist =
       math_util::Sq(vel_.x()) / (2.0 * params_.limits_.max_decel_);
-  if (CONFIG_clip_cpoa) {
+  if (params_.clip_cpoa_) {
     if (std::fabs(path->curvature_) < kEpsilon) {
       const float cpoa_length =
           std::min(params_.max_free_path_length_, goal_.x());
@@ -69,7 +66,6 @@ void AckermannSampler::SetMaxPathLength(
   }
 }
 
-// TODO: Implement this
 void AckermannSampler::CheckObstacles(
     std::shared_ptr<ConstantCurvatureArc> path) {
   path->obstacle_constrained_ = false;

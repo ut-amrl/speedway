@@ -26,6 +26,8 @@ class MotionParameters {
   float base_link_offset_;
 
   float max_free_path_length_;
+  float max_curvature_;
+  bool clip_cpoa_;
 
   float max_clearance_;
   float obstacle_margin_;
