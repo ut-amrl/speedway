@@ -1,6 +1,13 @@
 #include "motion/motion_primitives.h"
 
+#include <float.h>
+
+#include <eigen3/Eigen/Dense>
+
+#include "math/line2d.h"
 #include "math/math_util.h"
+
+using Eigen::Vector2f;
 
 namespace motion {
 
@@ -33,6 +40,19 @@ float Run1DTimeOptimalControl(const MotionLimits& limits, const float x_init,
   } else {
     return std::max<float>(0, speed - dv_d);
   }
+}
+
+float StraightLineClearance(const geometry::Line2f& l,
+                            const std::vector<Eigen::Vector2f>& points) {
+  const Vector2f d = l.Dir();
+  const float len = l.Length();
+  float clearance = FLT_MAX;
+  for (const Vector2f& p : points) {
+    const float x = d.dot(p - l.p0);
+    if (x < 0.0f || x > len) continue;
+    clearance = std::min<float>(clearance, l.Distance(p));
+  }
+  return clearance;
 }
 
 }  // namespace motion

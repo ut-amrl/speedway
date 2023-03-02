@@ -42,13 +42,11 @@ void Race::UpdatePointcloud(const std::vector<Eigen::Vector2f>& points) {
 void Race::Init(const RaceParameters& params) {
   params_ = params;
 
-  path_sampler_ =
-      std::unique_ptr<motion::PathSamplerBase>(new motion::AckermannSampler());
+  path_sampler_ = std::unique_ptr<motion::PathSamplerBase>(
+      new motion::AckermannSampler(params_.motion_params_));
   path_evaluator_ =
-      std::unique_ptr<motion::PathEvaluatorBase>(new motion::LinearEvaluator());
-
-  path_sampler_->Init(params_.motion_params_);
-  path_evaluator_->Init(params_.motion_params_);
+      std::unique_ptr<motion::PathEvaluatorBase>(new motion::LinearEvaluator(
+          params_.motion_params_, params_.linear_evaluator_params_));
 }
 
 void Race::Run(Eigen::Vector2f& cmd_vel, float& cmd_angle_vel) {

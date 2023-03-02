@@ -11,9 +11,8 @@ using Eigen::Vector2f;
 
 namespace motion {
 
-void AckermannSampler::Init(const MotionParameters& params) {
-  params_ = params;
-}
+AckermannSampler::AckermannSampler(const MotionParameters& params)
+    : PathSamplerBase(params) {}
 
 std::vector<std::shared_ptr<PathOptionBase>> AckermannSampler::Sample(
     const int num_samples) {

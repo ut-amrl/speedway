@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "motion/linear_evaluator.h"
 #include "motion/motion_primitives.h"
 
 namespace race {
@@ -11,7 +12,11 @@ namespace race {
 class RaceParameters {
  public:
   motion::MotionParameters motion_params_;
+
   int num_samples_;
+
+  motion::EvaluatorType evaluator_type_;
+  motion::LinearEvaluatorParameters linear_evaluator_params_;
 };
 
 class Race {

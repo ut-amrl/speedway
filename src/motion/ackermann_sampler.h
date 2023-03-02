@@ -7,7 +7,7 @@ namespace motion {
 
 class AckermannSampler : public PathSamplerBase {
  public:
-  void Init(const MotionParameters& params) override;
+  AckermannSampler(const MotionParameters& motion_params);
   std::vector<std::shared_ptr<PathOptionBase>> Sample(
       const int num_samples) override;
 

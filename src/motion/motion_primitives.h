@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "math/line2d.h"
 #include "math/poses_2d.h"
 
 namespace motion {
@@ -79,7 +80,8 @@ class PathSamplerBase {
   Eigen::Vector2f goal_;
   std::vector<Eigen::Vector2f> pointcloud_;
 
-  virtual void Init(const MotionParameters& params) = 0;
+  PathSamplerBase(const MotionParameters& params) { params_ = params; }
+
   virtual std::vector<std::shared_ptr<PathOptionBase>> Sample(
       const int num_samples) = 0;
 
@@ -95,6 +97,10 @@ class PathSamplerBase {
   }
 };
 
+// enum of different types of evaluators, update whenever you add a new
+// evaluator
+enum EvaluatorType { LINEAR };
+
 class PathEvaluatorBase {
  public:
   MotionParameters params_;
@@ -105,7 +111,8 @@ class PathEvaluatorBase {
   Eigen::Vector2f goal_;
   std::vector<Eigen::Vector2f> pointcloud_;
 
-  virtual void Init(const MotionParameters& params) = 0;
+  PathEvaluatorBase(const MotionParameters& params) { params_ = params; }
+
   virtual std::shared_ptr<PathOptionBase> FindBest(
       const std::vector<std::shared_ptr<PathOptionBase>>& paths) = 0;
 
@@ -124,5 +131,8 @@ class PathEvaluatorBase {
 float Run1DTimeOptimalControl(const MotionLimits& limits, const float x_init,
                               const float v_init, const float x_final,
                               const float v_final, const float dt);
+
+float StraightLineClearance(const geometry::Line2f& l,
+                            const std::vector<Eigen::Vector2f>& points);
 
 }  // namespace motion
