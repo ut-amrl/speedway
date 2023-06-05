@@ -17,10 +17,12 @@ using Eigen::Vector2f;
 namespace {
 DEFINE_string(config, "config/race.lua", "path to config file");
 
-CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
-CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
+CONFIG_STRING(odom_topic, "RaceParameters.ros_topics.odom");
+CONFIG_STRING(laser_topic, "RaceParameters.ros_topics.laser");
 
-CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_location");
+CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_config.laser_location");
+CONFIG_BOOL(include_out_of_range,
+            "RaceParameters.laser_config.include_out_of_range");
 
 ros::Publisher viz_pub_;
 amrl_msgs::VisualizationMsg local_viz_msg_;
@@ -45,7 +47,14 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
   for (size_t i = 0; i < (msg.angle_max - msg.angle_min) / msg.angle_increment;
        i++) {
     if (msg.ranges[i] <= msg.range_min || msg.ranges[i] >= msg.range_max) {
-      continue;
+      if (CONFIG_include_out_of_range)
+        cloud.push_back(
+            Vector2f{
+                msg.range_max * cos(msg.angle_min + msg.angle_increment * i),
+                msg.range_max * sin(msg.angle_min + msg.angle_increment * i)} +
+            CONFIG_laser_location);
+      else
+        continue;
     }
     double angle = msg.angle_min + msg.angle_increment * i;
     cloud.push_back(
@@ -61,6 +70,7 @@ int main(int argc, char** argv) {
   FLAGS_colorlogtostderr = true;
 
   config_reader::ConfigReader config_reader({FLAGS_config});
+  VLOG(1) << "Loaded config from " << FLAGS_config;
 
   ros::init(argc, argv, "race");
   ros::NodeHandle node_handle;
@@ -78,6 +88,7 @@ int main(int argc, char** argv) {
   global_viz_msg_ =
       visualization::NewVisualizationMessage("map", "race_global");
 
+  LOG(INFO) << "Starting...";
   ros::Rate loop(40);
   while (ros::ok()) {
     ros::spinOnce();
