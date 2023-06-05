@@ -5,7 +5,7 @@ RUN apt-get update && \
     apt-get install -y git libgflags-dev libpopt-dev \
                        libgoogle-glog-dev liblua5.1-0-dev \
                        libboost-all-dev libqt5websockets5-dev \
-                       python-is-python3 libeigen3-dev sudo tmux
+                       python-is-python3 libeigen3-dev sudo tmux vim
 
 # install ros apt deps
 RUN apt-get install -y ros-noetic-tf ros-noetic-angles

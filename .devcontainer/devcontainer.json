@@ -30,7 +30,8 @@
 			"extensions": [
 				"ms-vscode.cpptools",
 				"GitHub.copilot",
-				"VisualStudioExptTeam.vscodeintellicode"
+				"VisualStudioExptTeam.vscodeintellicode",
+				"twxs.cmake"
 			]
 		}
 	}
