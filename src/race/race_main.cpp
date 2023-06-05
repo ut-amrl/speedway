@@ -19,6 +19,7 @@ DEFINE_string(config, "config/race.lua", "path to config file");
 
 CONFIG_STRING(odom_topic, "RaceParameters.ros_topics.odom");
 CONFIG_STRING(laser_topic, "RaceParameters.ros_topics.laser");
+CONFIG_STRING(vis_topic, "RaceParameters.ros_topics.visualization");
 
 CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_config.laser_location");
 CONFIG_BOOL(include_out_of_range,
@@ -30,16 +31,12 @@ amrl_msgs::VisualizationMsg global_viz_msg_;
 }  // namespace
 
 void OdomCallback(const nav_msgs::Odometry& msg) {
-  if (FLAGS_v) {
-    LOG(INFO) << "Odometry t=" << msg.header.stamp.toSec();
-  }
+  VLOG(2) << "Odometry t=" << msg.header.stamp.toSec();
 }
 
 void LaserCallback(const sensor_msgs::LaserScan& msg) {
-  if (FLAGS_v) {
-    LOG(INFO) << "Laser t=" << msg.header.stamp.toSec()
-              << ",\tdf=" << GetWallTime() - msg.header.stamp.toSec();
-  }
+  VLOG(2) << "Laser t=" << msg.header.stamp.toSec()
+          << ",\tdf=" << GetWallTime() - msg.header.stamp.toSec();
 
   static std::vector<Vector2f> cloud;
   cloud.clear();
@@ -81,7 +78,7 @@ int main(int argc, char** argv) {
       node_handle.subscribe(CONFIG_laser_topic, 1, &LaserCallback);
 
   viz_pub_ =
-      node_handle.advertise<amrl_msgs::VisualizationMsg>("visualization", 1);
+      node_handle.advertise<amrl_msgs::VisualizationMsg>(CONFIG_vis_topic, 1);
 
   local_viz_msg_ =
       visualization::NewVisualizationMessage("base_link", "race_local");

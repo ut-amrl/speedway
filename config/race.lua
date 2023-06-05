@@ -1,7 +1,8 @@
 RaceParameters = {
     ros_topics = {
         odom = "/odom",
-        laser = "/scan"
+        laser = "/scan",
+        visualization = "/visualization"
     },
 
     laser_config = {
