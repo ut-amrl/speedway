@@ -1,0 +1,37 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
+{
+	"name": "Speedway",
+	"build": {
+		// Sets the run context to one level up instead of the .devcontainer folder.
+		"context": "..",
+		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+		"dockerfile": "../Dockerfile"
+	},
+	"containerUser": "dev",
+	"runArgs": [
+		"--userns=keep-id",
+		"--cap-add=SYS_PTRACE"
+	],
+	"workspaceMount": "source=${localWorkspaceFolder},target=/home/dev/speedway,type=bind",
+	"workspaceFolder": "/home/dev/speedway",
+	"forwardPorts": [
+		10272
+	],
+	"portsAttributes": {
+		"10272": {
+			"label": "Websocket",
+			"requireLocalPort": true
+		}
+	},
+	"postStartCommand": "/bin/bash -l tmux_session.sh",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"GitHub.copilot",
+				"VisualStudioExptTeam.vscodeintellicode"
+			]
+		}
+	}
+}
