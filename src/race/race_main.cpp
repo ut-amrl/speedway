@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "track/track_model.h"
 #include "visualization/visualization.h"
 
 using Eigen::Vector2f;
@@ -22,12 +21,6 @@ CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
 CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
 
 CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_location");
-
-CONFIG_UINT(wall_color, "RaceParameters.wall_color");
-CONFIG_UINT(wall_polynomial_order, "RaceParameters.wall_polynomial_order");
-CONFIG_DOUBLE(wall_tolerance, "RaceParameters.wall_tolerance");
-
-std::unique_ptr<track::TrackModel> track_model_;
 
 ros::Publisher viz_pub_;
 amrl_msgs::VisualizationMsg local_viz_msg_;
@@ -59,26 +52,6 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
         Vector2f{msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)} +
         CONFIG_laser_location);
   }
-
-  track_model_->UpdatePointcloud(cloud, msg.angle_min, msg.angle_max,
-                                 msg.angle_increment);
-}
-
-void DrawWallCurves() {
-  std::vector<Vector2f> left_wall = track_model_->SampleLeftWall();
-  std::vector<Vector2f> right_wall = track_model_->SampleRightWall();
-
-  if (left_wall.size() > 1)
-    for (size_t i = 1; i < left_wall.size(); i++) {
-      visualization::DrawLine(left_wall[i - 1], left_wall[i], CONFIG_wall_color,
-                              local_viz_msg_);
-    }
-
-  if (right_wall.size() > 1)
-    for (size_t i = 1; i < right_wall.size(); i++) {
-      visualization::DrawLine(right_wall[i - 1], right_wall[i],
-                              CONFIG_wall_color, local_viz_msg_);
-    }
 }
 
 int main(int argc, char** argv) {
@@ -100,9 +73,6 @@ int main(int argc, char** argv) {
   viz_pub_ =
       node_handle.advertise<amrl_msgs::VisualizationMsg>("visualization", 1);
 
-  track_model_ = std::make_unique<track::TrackModel>(
-      CONFIG_wall_polynomial_order, CONFIG_wall_tolerance);
-
   local_viz_msg_ =
       visualization::NewVisualizationMessage("base_link", "race_local");
   global_viz_msg_ =
@@ -114,8 +84,6 @@ int main(int argc, char** argv) {
 
     visualization::ClearVisualizationMsg(local_viz_msg_);
     visualization::ClearVisualizationMsg(global_viz_msg_);
-
-    DrawWallCurves();
 
     local_viz_msg_.header.stamp = ros::Time::now();
     global_viz_msg_.header.stamp = ros::Time::now();

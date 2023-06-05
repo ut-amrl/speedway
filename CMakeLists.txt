@@ -6,7 +6,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Arch: ${CMAKE_SYSTEM_PROCESSOR}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
-set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Werror")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra")
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Release")
   message(STATUS "Additional Flags for Release mode")
@@ -37,6 +37,6 @@ include_directories(src/config_reader/include)
 include_directories(src)
 
 rosbuild_add_executable(race
-                        src/race/race_main.cc
+                        src/race/race_main.cpp
                         src/visualization/visualization.cc)
 target_link_libraries(race speedway ${libs})
