@@ -1,0 +1,19 @@
+name: 'container_build' 
+on: # rebuild any PRs and master branch changes
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (GitHub)
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Build container and project
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: make

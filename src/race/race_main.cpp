@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "track/track_model.h"
 #include "visualization/visualization.h"
 
 using Eigen::Vector2f;
@@ -18,16 +17,13 @@ using Eigen::Vector2f;
 namespace {
 DEFINE_string(config, "config/race.lua", "path to config file");
 
-CONFIG_STRING(odom_topic, "RaceParameters.odom_topic");
-CONFIG_STRING(laser_topic, "RaceParameters.laser_topic");
+CONFIG_STRING(odom_topic, "RaceParameters.ros_topics.odom");
+CONFIG_STRING(laser_topic, "RaceParameters.ros_topics.laser");
+CONFIG_STRING(vis_topic, "RaceParameters.ros_topics.visualization");
 
-CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_location");
-
-CONFIG_UINT(wall_color, "RaceParameters.wall_color");
-CONFIG_UINT(wall_polynomial_order, "RaceParameters.wall_polynomial_order");
-CONFIG_DOUBLE(wall_tolerance, "RaceParameters.wall_tolerance");
-
-std::unique_ptr<track::TrackModel> track_model_;
+CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_config.laser_location");
+CONFIG_BOOL(include_out_of_range,
+            "RaceParameters.laser_config.include_out_of_range");
 
 ros::Publisher viz_pub_;
 amrl_msgs::VisualizationMsg local_viz_msg_;
@@ -35,16 +31,12 @@ amrl_msgs::VisualizationMsg global_viz_msg_;
 }  // namespace
 
 void OdomCallback(const nav_msgs::Odometry& msg) {
-  if (FLAGS_v) {
-    LOG(INFO) << "Odometry t=" << msg.header.stamp.toSec();
-  }
+  VLOG(2) << "Odometry t=" << msg.header.stamp.toSec();
 }
 
 void LaserCallback(const sensor_msgs::LaserScan& msg) {
-  if (FLAGS_v) {
-    LOG(INFO) << "Laser t=" << msg.header.stamp.toSec()
-              << ",\tdf=" << GetWallTime() - msg.header.stamp.toSec();
-  }
+  VLOG(2) << "Laser t=" << msg.header.stamp.toSec()
+          << ",\tdf=" << GetWallTime() - msg.header.stamp.toSec();
 
   static std::vector<Vector2f> cloud;
   cloud.clear();
@@ -52,33 +44,20 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
   for (size_t i = 0; i < (msg.angle_max - msg.angle_min) / msg.angle_increment;
        i++) {
     if (msg.ranges[i] <= msg.range_min || msg.ranges[i] >= msg.range_max) {
-      continue;
+      if (CONFIG_include_out_of_range)
+        cloud.push_back(
+            Vector2f{
+                msg.range_max * cos(msg.angle_min + msg.angle_increment * i),
+                msg.range_max * sin(msg.angle_min + msg.angle_increment * i)} +
+            CONFIG_laser_location);
+      else
+        continue;
     }
     double angle = msg.angle_min + msg.angle_increment * i;
     cloud.push_back(
         Vector2f{msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)} +
         CONFIG_laser_location);
   }
-
-  track_model_->UpdatePointcloud(cloud, msg.angle_min, msg.angle_max,
-                                 msg.angle_increment);
-}
-
-void DrawWallCurves() {
-  std::vector<Vector2f> left_wall = track_model_->SampleLeftWall();
-  std::vector<Vector2f> right_wall = track_model_->SampleRightWall();
-
-  if (left_wall.size() > 1)
-    for (size_t i = 1; i < left_wall.size(); i++) {
-      visualization::DrawLine(left_wall[i - 1], left_wall[i], CONFIG_wall_color,
-                              local_viz_msg_);
-    }
-
-  if (right_wall.size() > 1)
-    for (size_t i = 1; i < right_wall.size(); i++) {
-      visualization::DrawLine(right_wall[i - 1], right_wall[i],
-                              CONFIG_wall_color, local_viz_msg_);
-    }
 }
 
 int main(int argc, char** argv) {
@@ -88,6 +67,7 @@ int main(int argc, char** argv) {
   FLAGS_colorlogtostderr = true;
 
   config_reader::ConfigReader config_reader({FLAGS_config});
+  VLOG(1) << "Loaded config from " << FLAGS_config;
 
   ros::init(argc, argv, "race");
   ros::NodeHandle node_handle;
@@ -98,24 +78,20 @@ int main(int argc, char** argv) {
       node_handle.subscribe(CONFIG_laser_topic, 1, &LaserCallback);
 
   viz_pub_ =
-      node_handle.advertise<amrl_msgs::VisualizationMsg>("visualization", 1);
-
-  track_model_ = std::make_unique<track::TrackModel>(
-      CONFIG_wall_polynomial_order, CONFIG_wall_tolerance);
+      node_handle.advertise<amrl_msgs::VisualizationMsg>(CONFIG_vis_topic, 1);
 
   local_viz_msg_ =
       visualization::NewVisualizationMessage("base_link", "race_local");
   global_viz_msg_ =
       visualization::NewVisualizationMessage("map", "race_global");
 
+  LOG(INFO) << "Starting...";
   ros::Rate loop(40);
   while (ros::ok()) {
     ros::spinOnce();
 
     visualization::ClearVisualizationMsg(local_viz_msg_);
     visualization::ClearVisualizationMsg(global_viz_msg_);
-
-    DrawWallCurves();
 
     local_viz_msg_.header.stamp = ros::Time::now();
     global_viz_msg_.header.stamp = ros::Time::now();
