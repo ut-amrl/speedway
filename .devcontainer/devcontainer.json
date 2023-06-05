@@ -10,7 +10,7 @@
 	},
 	"containerUser": "dev",
 	"runArgs": [
-		"--userns=keep-id",
+		// "--userns=keep-id",
 		"--cap-add=SYS_PTRACE"
 	],
 	"workspaceMount": "source=${localWorkspaceFolder},target=/home/dev/speedway,type=bind",
