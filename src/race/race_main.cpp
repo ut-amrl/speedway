@@ -38,6 +38,9 @@ Race race_;
 
 void OdomCallback(const nav_msgs::Odometry& msg) {
   VLOG(2) << "Odometry t=" << msg.header.stamp.toSec();
+  race_.UpdateOdometry(
+      Eigen::Vector2f{msg.pose.pose.position.x, msg.pose.pose.position.y},
+      2 * atan2(msg.pose.pose.orientation.z, msg.pose.pose.orientation.w));
 }
 
 void LaserCallback(const sensor_msgs::LaserScan& msg) {
@@ -64,6 +67,8 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
                                     msg.ranges[i] * sin(angle)} +
                     CONFIG_laser_location);
   }
+
+  race_.UpdateLaser(cloud);
 }
 
 int main(int argc, char** argv) {
