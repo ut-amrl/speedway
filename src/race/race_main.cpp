@@ -40,7 +40,9 @@ void OdomCallback(const nav_msgs::Odometry& msg) {
   VLOG(2) << "Odometry t=" << msg.header.stamp.toSec();
   race_.UpdateOdometry(
       Eigen::Vector2f{msg.pose.pose.position.x, msg.pose.pose.position.y},
-      2 * atan2(msg.pose.pose.orientation.z, msg.pose.pose.orientation.w));
+      2 * atan2(msg.pose.pose.orientation.z, msg.pose.pose.orientation.w),
+      Eigen::Vector2f{msg.twist.twist.linear.x, msg.twist.twist.linear.y},
+      msg.twist.twist.angular.z);
 }
 
 void LaserCallback(const sensor_msgs::LaserScan& msg) {
@@ -111,14 +113,14 @@ int main(int argc, char** argv) {
 
     float speed, curvature;
     if (!race_.Run(speed, curvature)) {
-      LOG(ERROR) << "Error in Race::Run. Exiting...";
-      break;
+      LOG(ERROR) << "Error in Race::Run.";
+    } else {
+      ackermann_msg_.header.seq++;
+      ackermann_msg_.header.stamp = ros::Time::now();
+      ackermann_msg_.velocity = speed;
+      ackermann_msg_.curvature = curvature;
+      ackermann_pub_.publish(ackermann_msg_);
     }
-    ackermann_msg_.header.seq++;
-    ackermann_msg_.header.stamp = ros::Time::now();
-    ackermann_msg_.velocity = speed;
-    ackermann_msg_.curvature = curvature;
-    ackermann_pub_.publish(ackermann_msg_);
 
     local_viz_msg_.header.stamp = ros::Time::now();
     global_viz_msg_.header.stamp = ros::Time::now();
