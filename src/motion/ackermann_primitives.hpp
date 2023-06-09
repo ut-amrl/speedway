@@ -6,13 +6,12 @@ namespace motion {
 class ConstantCurvatureArc : public TrajectoryBase {
  public:
   ConstantCurvatureArc(float curvature, float length);
-  float Length() const override;
+  float Length() const override { return length_; }
   Eigen::Vector2f EndPoint() const override;
   float AngularLength() const override;
   Eigen::Vector2f AtT(float t) const override;
   Eigen::Vector2f AtDistance(float s) const override;
 
- private:
   float curvature_;
   float length_;
 };
