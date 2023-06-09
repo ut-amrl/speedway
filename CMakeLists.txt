@@ -30,6 +30,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 set(libs roslib roscpp rosbag glog gflags amrl_shared_lib boost_system lua5.1
     pthread)
 
+# builds libspeedway
 add_subdirectory(src)
 
 include_directories(src/shared)

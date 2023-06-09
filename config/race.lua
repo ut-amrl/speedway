@@ -2,7 +2,8 @@ RaceParameters = {
     ros_topics = {
         odom = "/odom",
         laser = "/scan",
-        visualization = "/visualization"
+        visualization = "/visualization",
+        ackermann = "/ackermann_curvature_drive"
     },
 
     laser_config = {
