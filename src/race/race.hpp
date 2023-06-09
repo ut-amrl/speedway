@@ -9,8 +9,7 @@
 // Object containing all logic and state for racing
 class Race {
  public:
-  Race(std::string sampler_type, std::string evaluator_type,
-       std::string executor_type);
+  Race();
 
   void UpdateOdometry(const Eigen::Vector2f& loc, const float angle,
                       const Eigen::Vector2f& vel, const float ang_vel);

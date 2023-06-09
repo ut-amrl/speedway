@@ -1,34 +1,36 @@
 #include "race/race.hpp"
 
+#include <config_reader/config_reader.h>
 #include <glog/logging.h>
 
 #include "motion/ackermann_primitives.hpp"
 #include "motion/linear_evaluator.hpp"
 #include "motion/simple_executor.hpp"
 
-Race::Race(std::string sampler_type, std::string evaluator_type,
-           std::string executor_type) {
-  // TODO: make this part of the type system and do checks in main; i.e. instead
-  // of passing strings pass enum
-  if (sampler_type == "ackermann") {
+CONFIG_STRING(sampler_type, "RaceParameters.sampler_type");
+CONFIG_STRING(evaluator_type, "RaceParameters.evaluator_type");
+CONFIG_STRING(executor_type, "RaceParameters.executor_type");
+
+Race::Race() {
+  if (CONFIG_sampler_type == "ackermann") {
     sampler_ =
         std::unique_ptr<motion::SamplerBase>(new motion::AckermannSampler());
   } else {
-    LOG(FATAL) << "Unknown sampler type: " << sampler_type;
+    LOG(FATAL) << "Unknown sampler type: " << CONFIG_sampler_type;
   }
 
-  if (evaluator_type == "linear") {
+  if (CONFIG_evaluator_type == "linear") {
     evaluator_ =
         std::unique_ptr<motion::EvaluatorBase>(new motion::LinearEvaluator());
   } else {
-    LOG(FATAL) << "Unknown evaluator type: " << evaluator_type;
+    LOG(FATAL) << "Unknown evaluator type: " << CONFIG_evaluator_type;
   }
 
-  if (executor_type == "simple") {
+  if (CONFIG_executor_type == "simple") {
     executor_ =
         std::unique_ptr<motion::ExecutorBase>(new motion::SimpleExecutor());
   } else {
-    LOG(FATAL) << "Unknown executor type: " << executor_type;
+    LOG(FATAL) << "Unknown executor type: " << CONFIG_executor_type;
   }
 }
 
