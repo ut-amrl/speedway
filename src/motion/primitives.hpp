@@ -62,4 +62,12 @@ class EvaluatorBase {
       const std::vector<std::shared_ptr<TrajectoryBase>>& trajectories,
       const LocalPlannerState& state) const = 0;
 };
+
+class ExecutorBase {
+ public:
+  // Returns the desired speed and curvature for the given trajectory and state
+  virtual std::pair<float, float> Execute(
+      const std::shared_ptr<TrajectoryBase>& trajectory,
+      const LocalPlannerState& state) const = 0;
+};
 }  // namespace motion

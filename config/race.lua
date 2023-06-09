@@ -12,5 +12,6 @@ RaceParameters = {
     },
 
     sampler_type = "ackermann",
-    evaluator_type = "linear"
+    evaluator_type = "linear",
+    executor_type = "simple"
 }

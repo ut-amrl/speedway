@@ -2,7 +2,12 @@
 
 #include <glog/logging.h>
 
-Race::Race(std::string sampler_type, std::string evaluator_type) {
+#include "motion/ackermann_primitives.hpp"
+#include "motion/linear_evaluator.hpp"
+#include "motion/simple_executor.hpp"
+
+Race::Race(std::string sampler_type, std::string evaluator_type,
+           std::string executor_type) {
   // TODO: make this part of the type system and do checks in main; i.e. instead
   // of passing strings pass enum
   if (sampler_type == "ackermann") {
@@ -17,6 +22,13 @@ Race::Race(std::string sampler_type, std::string evaluator_type) {
         std::unique_ptr<motion::EvaluatorBase>(new motion::LinearEvaluator());
   } else {
     LOG(FATAL) << "Unknown evaluator type: " << evaluator_type;
+  }
+
+  if (executor_type == "simple") {
+    executor_ =
+        std::unique_ptr<motion::ExecutorBase>(new motion::SimpleExecutor());
+  } else {
+    LOG(FATAL) << "Unknown executor type: " << executor_type;
   }
 }
 
@@ -33,7 +45,10 @@ void Race::UpdateLaser(const std::vector<Eigen::Vector2f>& cloud) {
 }
 
 bool Race::Run(float& speed, float& curvature) const {
-  speed = 1.0;
-  curvature = 0.0;
+  auto samples = sampler_->Sample(local_planner_state_);
+  auto best = evaluator_->FindBest(samples, local_planner_state_);
+  auto controls = executor_->Execute(best, local_planner_state_);
+  speed = controls.first;
+  curvature = controls.second;
   return true;
 }

@@ -28,6 +28,7 @@ CONFIG_BOOL(include_out_of_range,
 
 CONFIG_STRING(sampler_type, "RaceParameters.sampler_type");
 CONFIG_STRING(evaluator_type, "RaceParameters.evaluator_type");
+CONFIG_STRING(executor_type, "RaceParameters.executor_type");
 
 ros::Publisher ackermann_pub_;
 amrl_msgs::AckermannCurvatureDriveMsg ackermann_msg_;
@@ -104,8 +105,8 @@ int main(int argc, char** argv) {
   global_viz_msg_ =
       visualization::NewVisualizationMessage("map", "race_global");
 
-  race_ = std::unique_ptr<Race>(
-      new Race(CONFIG_sampler_type, CONFIG_evaluator_type));
+  race_ = std::unique_ptr<Race>(new Race(
+      CONFIG_sampler_type, CONFIG_evaluator_type, CONFIG_executor_type));
 
   LOG(INFO) << "Starting...";
   ros::Rate loop(40);

@@ -6,5 +6,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(speedway
             motion/ackermann_primitives.cpp
             motion/linear_evaluator.cpp
+            motion/simple_executor.cpp
             race/race.cpp)
 target_link_libraries(speedway ${libs})

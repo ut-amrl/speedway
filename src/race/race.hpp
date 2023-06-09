@@ -4,14 +4,13 @@
 #include <memory>
 #include <vector>
 
-#include "motion/ackermann_primitives.hpp"
-#include "motion/linear_evaluator.hpp"
 #include "motion/primitives.hpp"
 
 // Object containing all logic and state for racing
 class Race {
  public:
-  Race(std::string sampler_type, std::string evaluator_type);
+  Race(std::string sampler_type, std::string evaluator_type,
+       std::string executor_type);
 
   void UpdateOdometry(const Eigen::Vector2f& loc, const float angle,
                       const Eigen::Vector2f& vel, const float ang_vel);
@@ -25,4 +24,5 @@ class Race {
   motion::LocalPlannerState local_planner_state_;
   std::unique_ptr<motion::SamplerBase> sampler_;
   std::unique_ptr<motion::EvaluatorBase> evaluator_;
+  std::unique_ptr<motion::ExecutorBase> executor_;
 };
