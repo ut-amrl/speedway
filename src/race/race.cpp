@@ -1,5 +1,7 @@
 #include "race/race.hpp"
 
+Race::Race() {}
+
 void Race::UpdateOdometry(const Eigen::Vector2f& loc, const float angle) {
   odom_loc_ = loc;
   odom_angle_ = angle;

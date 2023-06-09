@@ -1,11 +1,18 @@
 #pragma once
 
 #include <eigen3/Eigen/Dense>
+#include <memory>
 #include <vector>
+
+#include "motion/ackermann_primitives.hpp"
+#include "motion/linear_evaluator.hpp"
+#include "motion/primitives.hpp"
 
 // Object containing all logic and state for racing
 class Race {
  public:
+  Race();
+
   void UpdateOdometry(const Eigen::Vector2f& loc, const float angle);
   void UpdateLaser(const std::vector<Eigen::Vector2f>& cloud);
 
@@ -21,4 +28,8 @@ class Race {
 
   // Raw pointcloud in base_link frame
   std::vector<Eigen::Vector2f> pointcloud_;
+
+  motion::LocalPlannerState local_planner_state_;
+  std::unique_ptr<motion::SamplerBase> sampler_;
+  std::unique_ptr<motion::EvaluatorBase> evaluator_;
 };
