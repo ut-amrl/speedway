@@ -57,19 +57,17 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
 
   for (size_t i = 0; i < (msg.angle_max - msg.angle_min) / msg.angle_increment;
        i++) {
+    float r;
+    float angle = msg.angle_min + msg.angle_increment * i;
     if (msg.ranges[i] <= msg.range_min || msg.ranges[i] >= msg.range_max) {
       if (CONFIG_include_out_of_range)
-        cloud.push_back(
-            Eigen::Vector2f{
-                msg.range_max * cos(msg.angle_min + msg.angle_increment * i),
-                msg.range_max * sin(msg.angle_min + msg.angle_increment * i)} +
-            CONFIG_laser_location);
+        r = msg.range_max;
       else
         continue;
+    } else {
+      r = msg.ranges[i];
     }
-    double angle = msg.angle_min + msg.angle_increment * i;
-    cloud.push_back(Eigen::Vector2f{msg.ranges[i] * cos(angle),
-                                    msg.ranges[i] * sin(angle)} +
+    cloud.push_back(Eigen::Vector2f{r * cos(angle), r * sin(angle)} +
                     CONFIG_laser_location);
   }
 
