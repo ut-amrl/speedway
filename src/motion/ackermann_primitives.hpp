@@ -1,4 +1,5 @@
 #pragma once
+
 #include "motion/primitives.hpp"
 
 namespace motion {

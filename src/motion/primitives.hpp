@@ -5,7 +5,21 @@
 #include <vector>
 
 namespace motion {
-struct LocalPlannerState {};
+// State of the robot relevant to the local planner
+struct LocalPlannerState {
+  // Location of robot according to odometry (in odom frame)
+  Eigen::Vector2f odom_loc;
+  // Angle of robot according to odometry (in odom frame)
+  float odom_angle;
+
+  // Linear velocity of robot according to odometry (in odom frame)
+  Eigen::Vector2f odom_vel;
+  // Angular velocity of robot according to odometry (in odom frame)
+  float odom_ang_vel;
+
+  // Raw pointcloud in base_link frame
+  std::vector<Eigen::Vector2f> pointcloud;
+};
 
 // A trajectory in the robot's local frame
 class TrajectoryBase {

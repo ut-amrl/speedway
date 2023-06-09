@@ -1,10 +1,11 @@
 #pragma once
+
 #include "motion/primitives.hpp"
 
 namespace motion {
 class LinearEvaluator : public EvaluatorBase {
  public:
-  LinearEvaluator(float speed_weight, float curvature_weight);
+  LinearEvaluator();
   float Evaluate(const std::shared_ptr<TrajectoryBase>& trajectory,
                  const LocalPlannerState& state) override;
   std::shared_ptr<TrajectoryBase> FindBest(

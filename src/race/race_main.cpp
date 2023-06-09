@@ -26,6 +26,9 @@ CONFIG_VECTOR2F(laser_location, "RaceParameters.laser_config.laser_location");
 CONFIG_BOOL(include_out_of_range,
             "RaceParameters.laser_config.include_out_of_range");
 
+CONFIG_STRING(sampler_type, "RaceParameters.sampler_type");
+CONFIG_STRING(evaluator_type, "RaceParameters.evaluator_type");
+
 ros::Publisher ackermann_pub_;
 amrl_msgs::AckermannCurvatureDriveMsg ackermann_msg_;
 
@@ -33,12 +36,12 @@ ros::Publisher viz_pub_;
 amrl_msgs::VisualizationMsg local_viz_msg_;
 amrl_msgs::VisualizationMsg global_viz_msg_;
 
-Race race_;
+std::unique_ptr<Race> race_;
 }  // namespace
 
 void OdomCallback(const nav_msgs::Odometry& msg) {
   VLOG(2) << "Odometry t=" << msg.header.stamp.toSec();
-  race_.UpdateOdometry(
+  race_->UpdateOdometry(
       Eigen::Vector2f{msg.pose.pose.position.x, msg.pose.pose.position.y},
       2 * atan2(msg.pose.pose.orientation.z, msg.pose.pose.orientation.w),
       Eigen::Vector2f{msg.twist.twist.linear.x, msg.twist.twist.linear.y},
@@ -70,7 +73,7 @@ void LaserCallback(const sensor_msgs::LaserScan& msg) {
                     CONFIG_laser_location);
   }
 
-  race_.UpdateLaser(cloud);
+  race_->UpdateLaser(cloud);
 }
 
 int main(int argc, char** argv) {
@@ -103,6 +106,9 @@ int main(int argc, char** argv) {
   global_viz_msg_ =
       visualization::NewVisualizationMessage("map", "race_global");
 
+  race_ = std::unique_ptr<Race>(
+      new Race(CONFIG_sampler_type, CONFIG_evaluator_type));
+
   LOG(INFO) << "Starting...";
   ros::Rate loop(40);
   while (ros::ok()) {
@@ -112,7 +118,7 @@ int main(int argc, char** argv) {
     visualization::ClearVisualizationMsg(global_viz_msg_);
 
     float speed, curvature;
-    if (!race_.Run(speed, curvature)) {
+    if (!race_->Run(speed, curvature)) {
       LOG(ERROR) << "Error in Race::Run.";
     } else {
       ackermann_msg_.header.seq++;
